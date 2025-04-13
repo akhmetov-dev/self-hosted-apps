@@ -1,12 +1,25 @@
-version: '3'
-
 services:
-  db:
-    image: mariadb:10.6
-    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+  vaultwarden:
+    image: vaultwarden/server:latest
+    restart: always
+    environment:
+      DOMAIN: "<type-value>"
+      SIGNUPS_ALLOWED: false
+      WEB_VAULT_ENABLED: false
+      VIRTUAL_HOST: <type-value>
+      LETSENCRYPT_HOST: <type-value>
+      LETSENCRYPT_EMAIL: <type-value>
+    volumes:
+      - vaultwarden:/data/
+    networks:
+      - proxy-tier
+
+  nextcloud-db:
+    image: mariadb:10.11
+    command: --transaction-isolation=READ-COMMITTED
     restart: always
     volumes:
-      - db:/var/lib/mysql:Z
+      - nextcloud-db:/var/lib/mysql:Z
     environment:
       - MYSQL_ROOT_PASSWORD=<type-value>
       - MARIADB_AUTO_UPGRADE=1
@@ -14,39 +27,47 @@ services:
     env_file:
       - db.env
 
-  redis:
+  nextcloud-redis:
     image: redis:alpine
     restart: always
 
-  app:
+  nextcloud-app:
     image: nextcloud:apache
     restart: always
     volumes:
-      - nextcloud:/var/www/html:z
+      - nextcloud-app:/var/www/html:z
+      # NOTE: The `volumes` config of the `cron` and `app` containers must match
     environment:
+      - OVERWRITEPROTOCOL=https
+      - NEXTCLOUD_TRUSTED_DOMAINS=<type-value>
       - VIRTUAL_HOST=<type-value>
       - LETSENCRYPT_HOST=<type-value>
       - LETSENCRYPT_EMAIL=<type-value>
-      - MYSQL_HOST=db
-      - REDIS_HOST=redis
+      - MYSQL_HOST=nextcloud-db
+      - REDIS_HOST=nextcloud-redis
     env_file:
       - db.env
     depends_on:
-      - db
-      - redis
+      - nextcloud-db
+      - nextcloud-redis
+      # Added proxy container dependency below. 
+      # It is unclear on when or why it happens, but sometimes NC manages to start before the proxy 
+      #  and it breaks for whatever weird reason resulting in the need of manual proxy container restart.
+      - proxy
     networks:
       - proxy-tier
       - default
 
-  cron:
+  nextcloud-cron:
     image: nextcloud:apache
     restart: always
     volumes:
-      - nextcloud:/var/www/html:z
+      - nextcloud-app:/var/www/html:z
+      # NOTE: The `volumes` config of the `cron` and `app` containers must match
     entrypoint: /cron.sh
     depends_on:
-      - db
-      - redis
+      - nextcloud-db
+      - nextcloud-redis
 
   proxy:
     build: ./proxy
@@ -55,11 +76,12 @@ services:
       - 80:80
       - 443:443
     labels:
-      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
     volumes:
-      - certs:/etc/nginx/certs:z,ro
+      - certs:/etc/nginx/certs:ro,z
       - vhost.d:/etc/nginx/vhost.d:z
       - html:/usr/share/nginx/html:z
+      - dhparam:/etc/nginx/dhparam:z
       - /var/run/docker.sock:/tmp/docker.sock:z,ro
     networks:
       - proxy-tier
@@ -67,6 +89,8 @@ services:
   letsencrypt-companion:
     image: nginxproxy/acme-companion
     restart: always
+    environment:
+      - DEFAULT_EMAIL=
     volumes:
       - certs:/etc/nginx/certs:z
       - acme:/etc/acme.sh:z
@@ -79,12 +103,14 @@ services:
       - proxy
 
 volumes:
-  db:
-  nextcloud:
+  vaultwarden:
+  nextcloud-db:
+  nextcloud-app:
   certs:
   acme:
   vhost.d:
   html:
+  dhparam:
 
 networks:
   proxy-tier:
