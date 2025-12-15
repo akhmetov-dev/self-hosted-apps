@@ -9,6 +9,8 @@ services:
       VIRTUAL_HOST: <type-value>
       LETSENCRYPT_HOST: <type-value>
       LETSENCRYPT_EMAIL: <type-value>
+      LOGIN_RATELIMIT_MAX_BURST: <type-value>
+      LOGIN_RATELIMIT_SECONDS: <type-value>
     volumes:
       - vaultwarden:/data/
     networks:
