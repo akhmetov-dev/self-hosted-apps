@@ -1,4 +1,22 @@
 services:
+  dozzle:
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8888:8080
+    restart: unless-stopped
+
+  v2raya:
+    image: mzz2017/v2raya:latest
+    restart: always
+    privileged: true
+    network_mode: host
+    volumes:
+      - /lib/modules:/lib/modules:ro
+      - /etc/v2raya:/etc/v2raya
+      - ./geo:/usr/local/share/xray
+
   vaultwarden:
     image: vaultwarden/server:latest
     restart: always
