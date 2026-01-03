@@ -1,14 +1,5 @@
 services:
 
-  # logs viewer
-  dozzle:
-    image: amir20/dozzle:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    ports:
-      - 8888:8080
-    restart: unless-stopped
-
   # proxy
   v2raya:
     image: mzz2017/v2raya:latest
@@ -40,78 +31,18 @@ services:
       - "traefik.http.routers.vaultwarden.entrypoints=websecure"
       - "traefik.http.routers.vaultwarden.tls.certresolver=le"
 
-  nextcloud-db:
-    image: mariadb:10.11
-    command: --transaction-isolation=READ-COMMITTED
-    restart: always
-    volumes:
-      - nextcloud-db:/var/lib/mysql:Z
-    environment:
-      - MARIADB_AUTO_UPGRADE=1
-      - MARIADB_DISABLE_UPGRADE_BACKUP=1
-    env_file:
-      - db.env
-    networks:
-      - proxy-tier
-
-  nextcloud-redis:
-    image: redis:alpine
-    restart: always
-    networks:
-      - proxy-tier
-
-  nextcloud-app:
-    image: nextcloud:apache
-    restart: always
-    volumes:
-      - nextcloud-app:/var/www/html:z
-      # NOTE: The `volumes` config of the `cron` and `app` containers must match
-    environment:
-      - OVERWRITEPROTOCOL=https
-      - NEXTCLOUD_TRUSTED_DOMAINS=<type-value>
-      - MYSQL_HOST=nextcloud-db
-      - REDIS_HOST=nextcloud-redis
-      - APACHE_DISABLE_REWRITE_IP=true
-      - TRUSTED_PROXIES=172.19.0.1
-    env_file:
-      - db.env
-    depends_on:
-      - nextcloud-db
-      - nextcloud-redis
-      - traefik
-    networks:
-      - proxy-tier
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`<type-value>`)"
-      - "traefik.http.routers.nextcloud.entrypoints=websecure"
-      - "traefik.http.routers.nextcloud.tls.certresolver=le"
-
-  nextcloud-cron:
-    image: nextcloud:apache
-    restart: always
-    volumes:
-      - nextcloud-app:/var/www/html:z
-      # NOTE: The `volumes` config of the `cron` and `app` containers must match
-    entrypoint: /cron.sh
-    depends_on:
-      - nextcloud-db
-      - nextcloud-redis
-    networks:
-      - proxy-tier
-
   # task manager
   vikunja:
     image: vikunja/vikunja:latest
     environment:
       VIKUNJA_SERVICE_PUBLICURL: <type-value>
       VIKUNJA_DATABASE_HOST: db
-      VIKUNJA_DATABASE_PASSWORD: <type-value>
       VIKUNJA_DATABASE_TYPE: postgres
-      VIKUNJA_DATABASE_USER: postgres
       VIKUNJA_DATABASE_DATABASE: vikunja
       VIKUNJA_SERVICE_JWTSECRET: <type-value>
       VIKUNJA_SERVICE_ENABLEREGISTRATION: false
+    env_file:
+      - vikunja.env
     volumes:
       - ./files:/app/vikunja/files
     networks:
@@ -126,21 +57,29 @@ services:
       - "traefik.http.routers.vikunja.entrypoints=websecure"
       - "traefik.http.routers.vikunja.tls.certresolver=le"
 
+  # logs viewer
+  dozzle:
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8888:8080
+    restart: unless-stopped
+
+  # database
   db:
     image: postgres:latest
-    environment:
-      POSTGRES_PASSWORD: <type-value>
-      POSTGRES_USER: postgres
+    env_file:
+      - db.env
     volumes:
-      - ./db:/var/lib/postgresql/data
-      - ./db/init-vikunja.sql:/docker-entrypoint-initdb.d/init-vikunja.sql:ro
+      - ./db:/var/lib/postgresql
     restart: unless-stopped
-    networks:
-      - proxy-tier
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER"]
       interval: 2s
       start_period: 30s
+    networks:
+      - proxy-tier
 
   # reverse proxy server
   traefik:
@@ -169,8 +108,6 @@ services:
 
 volumes:
   vaultwarden:
-  nextcloud-db:
-  nextcloud-app:
   traefik_letsencrypt:
 
 networks:
