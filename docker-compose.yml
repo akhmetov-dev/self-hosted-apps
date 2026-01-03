@@ -130,12 +130,5 @@ services:
       - 8890:3001
     restart: always
 
-volumes:
-  vaultwarden:
-  traefik_letsencrypt:
-  filebrowser_data:
-  filebrowser_database:
-  filebrowser_config:
-
 networks:
   proxy-tier:
