@@ -1,4 +1,6 @@
 services:
+
+  # logs viewer
   dozzle:
     image: amir20/dozzle:latest
     volumes:
@@ -7,6 +9,7 @@ services:
       - 8888:8080
     restart: unless-stopped
 
+  # proxy
   v2raya:
     image: mzz2017/v2raya:latest
     restart: always
@@ -17,6 +20,7 @@ services:
       - /etc/v2raya:/etc/v2raya
       - ./geo:/usr/local/share/xray
 
+  # password manager
   vaultwarden:
     image: vaultwarden/server:latest
     restart: always
@@ -24,15 +28,17 @@ services:
       DOMAIN: "<type-value>"
       SIGNUPS_ALLOWED: false
       WEB_VAULT_ENABLED: false
-      VIRTUAL_HOST: <type-value>
-      LETSENCRYPT_HOST: <type-value>
-      LETSENCRYPT_EMAIL: <type-value>
       LOGIN_RATELIMIT_MAX_BURST: <type-value>
       LOGIN_RATELIMIT_SECONDS: <type-value>
     volumes:
       - vaultwarden:/data/
     networks:
       - proxy-tier
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.rule=Host(`<type-value>`)"
+      - "traefik.http.routers.vaultwarden.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden.tls.certresolver=le"
 
   nextcloud-db:
     image: mariadb:10.11
@@ -45,10 +51,14 @@ services:
       - MARIADB_DISABLE_UPGRADE_BACKUP=1
     env_file:
       - db.env
+    networks:
+      - proxy-tier
 
   nextcloud-redis:
     image: redis:alpine
     restart: always
+    networks:
+      - proxy-tier
 
   nextcloud-app:
     image: nextcloud:apache
@@ -59,9 +69,6 @@ services:
     environment:
       - OVERWRITEPROTOCOL=https
       - NEXTCLOUD_TRUSTED_DOMAINS=<type-value>
-      - VIRTUAL_HOST=<type-value>
-      - LETSENCRYPT_HOST=<type-value>
-      - LETSENCRYPT_EMAIL=<type-value>
       - MYSQL_HOST=nextcloud-db
       - REDIS_HOST=nextcloud-redis
       - APACHE_DISABLE_REWRITE_IP=true
@@ -71,13 +78,14 @@ services:
     depends_on:
       - nextcloud-db
       - nextcloud-redis
-      # Added proxy container dependency below. 
-      # It is unclear on when or why it happens, but sometimes NC manages to start before the proxy 
-      #  and it breaks for whatever weird reason resulting in the need of manual proxy container restart.
-      - proxy
+      - traefik
     networks:
       - proxy-tier
-      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`<type-value>`)"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud.tls.certresolver=le"
 
   nextcloud-cron:
     image: nextcloud:apache
@@ -89,49 +97,39 @@ services:
     depends_on:
       - nextcloud-db
       - nextcloud-redis
+    networks:
+      - proxy-tier
 
-  proxy:
-    build: ./proxy
+  # reverse proxy server
+  traefik:
+    image: traefik:latest
     restart: always
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --api.dashboard=true
+      - --api.insecure=true
+      # - --log.level=DEBUG
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      - --certificatesresolvers.le.acme.email=<type-value>
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
     ports:
       - 80:80
       - 443:443
-    labels:
-      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
+      - 8889:8080
     volumes:
-      - certs:/etc/nginx/certs:ro,z
-      - vhost.d:/etc/nginx/vhost.d:z
-      - html:/usr/share/nginx/html:z
-      - dhparam:/etc/nginx/dhparam:z
-      - /var/run/docker.sock:/tmp/docker.sock:z,ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
     networks:
       - proxy-tier
-
-  letsencrypt-companion:
-    image: nginxproxy/acme-companion
-    restart: always
-    environment:
-      - DEFAULT_EMAIL=
-    volumes:
-      - certs:/etc/nginx/certs:z
-      - acme:/etc/acme.sh:z
-      - vhost.d:/etc/nginx/vhost.d:z
-      - html:/usr/share/nginx/html:z
-      - /var/run/docker.sock:/var/run/docker.sock:z,ro
-    networks:
-      - proxy-tier
-    depends_on:
-      - proxy
 
 volumes:
   vaultwarden:
   nextcloud-db:
   nextcloud-app:
-  certs:
-  acme:
-  vhost.d:
-  html:
-  dhparam:
+  traefik_letsencrypt:
 
 networks:
   proxy-tier:
