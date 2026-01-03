@@ -18,7 +18,7 @@ services:
     environment:
       DOMAIN: "<type-value>"
       SIGNUPS_ALLOWED: false
-      WEB_VAULT_ENABLED: false
+      WEB_VAULT_ENABLED: true
       LOGIN_RATELIMIT_MAX_BURST: <type-value>
       LOGIN_RATELIMIT_SECONDS: <type-value>
     volumes:
@@ -39,7 +39,6 @@ services:
       VIKUNJA_DATABASE_HOST: db
       VIKUNJA_DATABASE_TYPE: postgres
       VIKUNJA_DATABASE_DATABASE: vikunja
-      VIKUNJA_SERVICE_JWTSECRET: <type-value>
       VIKUNJA_SERVICE_ENABLEREGISTRATION: false
     env_file:
       - vikunja.env
@@ -56,6 +55,22 @@ services:
       - "traefik.http.routers.vikunja.rule=Host(`<type-value>`)"
       - "traefik.http.routers.vikunja.entrypoints=websecure"
       - "traefik.http.routers.vikunja.tls.certresolver=le"
+
+  # file storage
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    restart: unless-stopped
+    volumes:
+      - filebrowser_data:/srv
+      - filebrowser_database:/database
+      - filebrowser_config:/config
+    networks:
+      - proxy-tier
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.filebrowser.rule=Host(`<type-value>`)"
+      - "traefik.http.routers.filebrowser.entrypoints=websecure"
+      - "traefik.http.routers.filebrowser.tls.certresolver=le"
 
   # logs viewer
   dozzle:
@@ -109,6 +124,9 @@ services:
 volumes:
   vaultwarden:
   traefik_letsencrypt:
+  filebrowser_data:
+  filebrowser_database:
+  filebrowser_config:
 
 networks:
   proxy-tier:
