@@ -100,6 +100,48 @@ services:
     networks:
       - proxy-tier
 
+  # task manager
+  vikunja:
+    image: vikunja/vikunja:latest
+    environment:
+      VIKUNJA_SERVICE_PUBLICURL: <type-value>
+      VIKUNJA_DATABASE_HOST: db
+      VIKUNJA_DATABASE_PASSWORD: <type-value>
+      VIKUNJA_DATABASE_TYPE: postgres
+      VIKUNJA_DATABASE_USER: postgres
+      VIKUNJA_DATABASE_DATABASE: vikunja
+      VIKUNJA_SERVICE_JWTSECRET: <type-value>
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: false
+    volumes:
+      - ./files:/app/vikunja/files
+    networks:
+      - proxy-tier
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vikunja.rule=Host(`<type-value>`)"
+      - "traefik.http.routers.vikunja.entrypoints=websecure"
+      - "traefik.http.routers.vikunja.tls.certresolver=le"
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: <type-value>
+      POSTGRES_USER: postgres
+    volumes:
+      - ./db:/var/lib/postgresql/data
+      - ./db/init-vikunja.sql:/docker-entrypoint-initdb.d/init-vikunja.sql:ro
+    restart: unless-stopped
+    networks:
+      - proxy-tier
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER"]
+      interval: 2s
+      start_period: 30s
+
   # reverse proxy server
   traefik:
     image: traefik:latest
@@ -111,7 +153,7 @@ services:
       - --entrypoints.websecure.address=:443
       - --api.dashboard=true
       - --api.insecure=true
-      # - --log.level=DEBUG
+      - --log.level=INFO
       - --certificatesresolvers.le.acme.tlschallenge=true
       - --certificatesresolvers.le.acme.email=<type-value>
       - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
