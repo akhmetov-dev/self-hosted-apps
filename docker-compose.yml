@@ -121,6 +121,15 @@ services:
     networks:
       - proxy-tier
 
+  # monitoring
+  uptime-kuma:
+    image: louislam/uptime-kuma:beta
+    volumes:
+      - ./data:/app/data
+    ports:
+      - 8890:3001
+    restart: always
+
 volumes:
   vaultwarden:
   traefik_letsencrypt:
