@@ -1,3 +1,5 @@
 # Uptime Kuma
 
-Документация не реализована.
+[git](https://github.com/louislam/uptime-kuma)
+
+TODO описать.

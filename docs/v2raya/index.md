@@ -1,3 +1,6 @@
 # v2raya
 
-Документация не реализована.
+[xray](https://github.com/XTLS/Xray-core)
+[v2rayA](https://github.com/v2rayA/v2rayA)
+
+TODO описать.

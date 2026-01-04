@@ -1,3 +1,5 @@
 # Dozzle
 
-Документация не реализована.
+[git](https://github.com/amir20/dozzle)
+
+TODO описать.

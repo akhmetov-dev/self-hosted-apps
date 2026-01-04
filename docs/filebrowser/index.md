@@ -1,3 +1,5 @@
 # Filebrowser
 
-Документация не реализована.
+[git](https://github.com/filebrowser/filebrowser)
+
+TODO описать.
