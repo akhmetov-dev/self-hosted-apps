@@ -34,3 +34,20 @@ graph TB
 - [Dozzle](dozzle/) - Просмотрщик логов
 - [Traefik](traefik/) - Обратный прокси
 - [Uptime Kuma](uptime-kuma/) - Мониторинг
+
+<!-- Client-side Mermaid renderer -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('pre > code.language-mermaid, code.language-mermaid').forEach(function(el){
+        var pre = el.parentElement;
+        var wrapper = document.createElement('div');
+        wrapper.className = 'mermaid';
+        wrapper.textContent = el.textContent;
+        pre.parentNode.replaceChild(wrapper, pre);
+    });
+    if (typeof mermaid !== 'undefined') {
+        mermaid.initialize({ startOnLoad: true });
+    }
+});
+</script>
