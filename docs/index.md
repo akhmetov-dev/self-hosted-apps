@@ -6,23 +6,21 @@
 
 ```mermaid
 graph TB
-    Internet[Интернет]
+    WAN[WAN]
     Traefik[Traefik]
-    
-    Internet -->|HTTPS:443| Traefik
-    
-    Traefik --> Vaultwarden[Vaultwarden]
-    Traefik --> Vikunja[Vikunja]
-    Traefik --> Filebrowser[Filebrowser]
-    
-    Vikunja --> DB[(PostgreSQL)]
-    
     V2raya[V2raya]
     Dozzle[Dozzle]
     Kuma[Uptime Kuma]
-    
-    style Traefik fill:#0066cc,color:#fff
-    style DB fill:#336791,color:#fff
+    Vaultwarden[Vaultwarden]
+    Vikunja[Vikunja]
+    Filebrowser[Filebrowser]
+    DB[(PostgreSQL)]
+
+    WAN -->|HTTPS:443| Traefik
+    Traefik --> Vaultwarden
+    Traefik --> Vikunja
+    Traefik --> Filebrowser
+    Vikunja --> DB
 ```
 
 ## Компоненты
