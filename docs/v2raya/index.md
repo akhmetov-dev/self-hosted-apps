@@ -24,7 +24,6 @@ services:
 4) [Обход блокировок на OpenWRT с помощью v2rayA (xray-core) и баз GeoIP, Geosite Re:filter, Antifilter](https://habr.com/ru/articles/773696/)
 
 5) Настройка маршрутизации. Предопределенные списки доменов
-
     - [базовый список (встроен в xray, скачивать дополнительно нет необходимости)](https://xtls.github.io/ru/config/routing.html#ruleobject)
 
     - [полный международный список](https://github.com/v2fly/domain-list-community)
