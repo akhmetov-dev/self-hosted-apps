@@ -16,15 +16,25 @@ services:
 
 ## Полезные ссылки
 1) [Интернет-цензура и обход блокировок: не время расслабляться](https://habr.com/ru/articles/710980/)
+
 2) [Современные технологии обхода блокировок: V2Ray, XRay, XTLS, Hysteria, Cloak и все-все-все](https://habr.com/ru/articles/727868/)
+
 3) [Bleeding-edge обход блокировок с полной маскировкой: настраиваем сервер и клиент XRay с XTLS-Reality быстро и просто](https://habr.com/ru/articles/731608/)
+
 4) [Обход блокировок на OpenWRT с помощью v2rayA (xray-core) и баз GeoIP, Geosite Re:filter, Antifilter](https://habr.com/ru/articles/773696/)
+
 5) Настройка маршрутизации. Предопределенные списки доменов
+
     - [базовый список (встроен в xray, скачивать дополнительно нет необходимости)](https://xtls.github.io/ru/config/routing.html#ruleobject)
+
     - [полный международный список](https://github.com/v2fly/domain-list-community)
+    
     - [список для рунета](https://github.com/runetfreedom/russia-v2ray-rules-dat?tab=readme-ov-file)
+
 6) [xray](https://github.com/XTLS/Xray-core)
+
 7) [v2rayA](https://github.com/v2rayA/v2rayA)
+
 8) ["one click"-скрипт, упрощающий установку xray-core на сервер](https://github.com/zxcvos/Xray-script)
 
 ## Введение
