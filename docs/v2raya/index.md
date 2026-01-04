@@ -1,7 +1,18 @@
 # v2raya
 
 ## Конфигурация
-[docker-compose.yml](../../docker-compose.yml#L4)
+```yml
+services:
+  v2raya:
+    image: mzz2017/v2raya:latest
+    restart: always
+    privileged: true
+    network_mode: host
+    volumes:
+      - /lib/modules:/lib/modules:ro
+      - /etc/v2raya:/etc/v2raya
+      - ./v2raya/geo:/usr/local/share/xray
+```
 
 ## Полезные ссылки
 - [xray](https://github.com/XTLS/Xray-core)
