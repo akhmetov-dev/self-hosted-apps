@@ -30,6 +30,7 @@ services:
 
 ## Полезные ссылки
 - [git](https://github.com/traefik/traefik)
+- [настройка](https://unixhost.pro/blog/ru/2022/07/traefik-2-ustanovka-nastrojka-primery/)
 
 ## Описание
 TODO описать.

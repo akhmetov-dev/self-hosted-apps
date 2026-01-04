@@ -30,6 +30,10 @@ services:
 
 ## Полезные ссылки
 - [git](https://github.com/go-vikunja/vikunja)
+- [пример docker compose](https://vikunja.io/docs/full-docker-example/#example-with-traefik-2)
+- защита от brute force
+  - [через ratelimit](https://vikunja.io/docs/config-options/#0--ratelimit)
+  - [через fail2ban](https://vikunja.io/docs/fail2ban/)
 
 ## Описание
 TODO описать.

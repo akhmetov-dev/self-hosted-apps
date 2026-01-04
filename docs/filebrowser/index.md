@@ -21,6 +21,8 @@ services:
 
 ## Полезные ссылки
 - [git](https://github.com/filebrowser/filebrowser)
+- защита от brute force
+  - [через fail2ban](https://filebrowser.org/deployment.html)
 
 ## Описание
 TODO описать.
