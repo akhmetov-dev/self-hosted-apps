@@ -54,4 +54,71 @@ services:
 
 Ссылка 8 ведет на shell-скрипт для быстрой установки и управления Xray без ручного редактирования конфигов. Позволяет в интерактивном режиме развернуть популярные схемы вроде VLESS‑Vision‑REALITY, VLESS‑XHTTP‑REALITY и Trojan‑XHTTP‑REALITY.
 
+# Описание
+Предлагаемая к реализации схема выглядит следующим образом:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor ClientCommon as Обычный Клиент
+    actor ClientVIP as VIP Клиент
+    
+    participant Router as Роутер
+    participant LocalXrayServer as Локальный Xray Сервер
+    participant RemoteXrayServer as Удаленный Xray Сервер
+    participant Resource as Ресурс
+
+    %% Фаза 1: Настройка сети (DHCP)
+    rect rgb(240, 240, 240)
+        Note over ClientCommon, Router: Этап 1: Получение настроек сети
+        ClientCommon->>Router: DHCP Discover
+        Router-->>ClientCommon: DHCP Offer (Router IP)
+        
+        ClientVIP->>Router: DHCP Discover
+        Note right of Router: Проверка MAC-адреса<br>(Метка "xray")
+        Router-->>ClientVIP: DHCP Offer (Xray IP)
+    end
+
+    %% Сценарий 1: Обычный клиент
+    rect rgb(224, 247, 250)
+        Note over ClientCommon, Resource: Сценарий А: Обычный клиент
+        ClientCommon->>Router: Запрос к Ресурсу
+        Router->>Resource: Доступ к ресурсу
+        
+        %% Обратный путь
+        Resource-->>Router: Ответ от ресурса
+        Router-->>ClientCommon: Ответ клиенту
+    end
+
+    %% Сценарий 2: VIP Клиент -> Direct
+    rect rgb(243, 229, 245)
+        Note over ClientVIP, Resource: Сценарий Б: VIP Клиент напрямую
+        ClientVIP->>LocalXrayServer: Запрос к Ресурсу
+        Note over LocalXrayServer: Routing: Direct
+        LocalXrayServer->>Router: Пересылка запроса
+        Router->>Resource: Доступ к ресурсу
+
+        %% Обратный путь
+        Resource-->>Router: Ответ от ресурса
+        Router-->>LocalXrayServer: Пересылка ответа
+        LocalXrayServer-->>ClientVIP: Ответ клиенту
+    end
+
+    %% Сценарий 3: VIP Клиент -> RemoteXrayServer
+    rect rgb(255, 235, 238)
+        Note over ClientVIP, Resource: Сценарий В: VIP Клиент (Заблокированный ресурс)
+        ClientVIP->>LocalXrayServer: Запрос к Ресурсу
+        Note over LocalXrayServer: Routing: Proxy
+        LocalXrayServer->>Router: Пересылка запроса в proxy
+        Router->>RemoteXrayServer: Пересылка запроса в proxy
+        RemoteXrayServer->>Resource: Доступ к ресурсу
+
+        %% Обратный путь
+        Resource-->>RemoteXrayServer: Ответ от ресурса
+        RemoteXrayServer-->>Router: Ответ (через туннель)
+        Router-->>LocalXrayServer: Ответ (через туннель)
+        LocalXrayServer-->>ClientVIP: Ответ клиенту
+    end
+```
+
 {% include mermaid.html %}
