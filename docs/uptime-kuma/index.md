@@ -1,5 +1,9 @@
 # Uptime Kuma
 
-[git](https://github.com/louislam/uptime-kuma)
+## Полезные ссылки
+- [git](https://github.com/louislam/uptime-kuma)
 
+## Описание
 TODO описать.
+
+{% include mermaid.html %}
