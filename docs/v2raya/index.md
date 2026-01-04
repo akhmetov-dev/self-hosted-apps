@@ -25,11 +25,11 @@ services:
 
 5) Настройка маршрутизации. Предопределенные списки доменов:
 
-    * [базовый список (встроен в xray, скачивать дополнительно нет необходимости)](https://xtls.github.io/ru/config/routing.html#ruleobject)
+[базовый список (встроен в xray, скачивать дополнительно нет необходимости)](https://xtls.github.io/ru/config/routing.html#ruleobject)
 
-    * [полный международный список](https://github.com/v2fly/domain-list-community)
+[полный международный список](https://github.com/v2fly/domain-list-community)
 
-    * [список для рунета](https://github.com/runetfreedom/russia-v2ray-rules-dat?tab=readme-ov-file)
+[список для рунета](https://github.com/runetfreedom/russia-v2ray-rules-dat?tab=readme-ov-file)
 
 6) [xray](https://github.com/XTLS/Xray-core)
 
